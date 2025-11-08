@@ -12,7 +12,7 @@ const counter = new client.Counter({
 
 app.get("/api/hello", (req, res) => {
   counter.inc(); // count each request
-  res.json({ message: "Hello, JMeter! Test" });
+  res.json({ message: "Hello, JMeter" });
 });
 
 // expose metrics endpoint
