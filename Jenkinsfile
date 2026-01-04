@@ -1,34 +1,30 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Clone') {
-            steps {
-                checkout scm
-            }
-        }
+    environment {
+        IMAGE_NAME = "my-node-app"
+    }
 
-        stage('Build') {
+    stages {
+        stage('Checkout') {
             steps {
-                sh 'mvn clean install'
+                git 'https://github.com/Pavan1471/cicd'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t cicd-app:latest .'
+                script {
+                    // Use commit hash as tag
+                    def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    sh "docker build -t ${IMAGE_NAME}:${commit} ."
+                }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('List Local Docker Images') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh """
-                        echo $PASS | docker login -u $USER --password-stdin
-                        docker tag cicd-app:latest $USER/cicd-app:latest
-                        docker push $USER/cicd-app:latest
-                    """
-                }
+                sh "docker images"
             }
         }
     }
